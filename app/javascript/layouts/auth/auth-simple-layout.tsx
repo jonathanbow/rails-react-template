@@ -1,7 +1,7 @@
 import { Link } from "@inertiajs/react"
+import { Globe } from "lucide-react"
 import type { PropsWithChildren } from "react"
 
-import AppLogoIcon from "@/components/app-logo-icon"
 import { home } from "@/routes"
 
 interface AuthLayoutProps {
@@ -25,7 +25,7 @@ export default function AuthSimpleLayout({
               className="flex flex-col items-center gap-2 font-medium"
             >
               <div className="mb-1 flex size-14 items-center justify-center rounded-md">
-                <AppLogoIcon className="size-14 fill-current text-[var(--foreground)] dark:text-white" />
+                <Globe className="size-14 text-[var(--foreground)] dark:text-white" />
               </div>
               <span className="sr-only">{title}</span>
             </Link>

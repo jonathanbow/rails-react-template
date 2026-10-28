@@ -1,6 +1,6 @@
 import { Head, Link, usePage } from "@inertiajs/react"
+import { Globe } from "lucide-react"
 
-import AppLogoIcon from "@/components/app-logo-icon"
 import { dashboard, sessions } from "@/routes"
 
 export default function Welcome() {
@@ -90,7 +90,7 @@ export default function Welcome() {
             </div>
 
             <div className="relative -mb-px aspect-[335/376] w-full shrink-0 overflow-hidden rounded-t-lg bg-[#D30001] p-10 text-white lg:mb-0 lg:-ml-px lg:aspect-auto lg:w-[438px] lg:rounded-t-none lg:rounded-r-lg">
-              <AppLogoIcon className="h-full w-full" />
+              <Globe className="h-full w-full" />
             </div>
           </main>
         </div>

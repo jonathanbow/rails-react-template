@@ -1,5 +1,5 @@
 import { Link, usePage } from "@inertiajs/react"
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from "lucide-react"
+import { BookOpen, Folder, Globe, LayoutGrid, Menu, Search } from "lucide-react"
 
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { Icon } from "@/components/icon"
@@ -36,7 +36,6 @@ import { dashboard } from "@/routes"
 import type { BreadcrumbItem, NavItem } from "@/types"
 
 import AppLogo from "./app-logo"
-import AppLogoIcon from "./app-logo-icon"
 
 const mainNavItems: NavItem[] = [
   {
@@ -92,7 +91,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
               >
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <SheetHeader className="flex justify-start text-left">
-                  <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
+                  <Globe className="h-6 w-6 text-black dark:text-white" />
                 </SheetHeader>
                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                   <div className="flex h-full flex-col justify-between text-sm">
