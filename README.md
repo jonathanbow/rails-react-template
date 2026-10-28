@@ -54,10 +54,13 @@ Verification and password-reset emails open in your browser through [letter_open
 
 Do this first, before you build on the template:
 
-1. **Rename the app.** Search for `react_starter_kit`, `rails_react_template` and `ReactStarterKit` and replace them. The main places are:
-   - `package.json` (`name`)
+1. **Rename the app.** Search for `rails_react_template`, `rails-react-template` and `RailsReactTemplate` and replace them. The main places are:
+   - `package.json` and `package-lock.json` (`name`)
    - `config/database.yml` (database names)
    - `config/application.rb` (module name)
+   - `config/deploy.yml` (Kamal service and image names)
+   - `app/views/pwa/manifest.json.erb` (PWA name)
+   - `Dockerfile` (comment examples)
 2. **Create credentials.** The template doesn't ship a `config/credentials.yml.enc`, and `bin/setup` doesn't create one. Development and test work without it, but production needs it. Run `bin/rails credentials:edit` to generate your own encrypted credentials file and `config/master.key` (save and close the editor to write them). Commit `config/credentials.yml.enc`, but never commit `config/master.key`, which is gitignored. Keep the key in a password manager, because deploys read it (`RAILS_MASTER_KEY` in `.kamal/secrets` and in the Railway variables below).
 3. **Swap the branding.** The logo lives in `app/javascript/components/app-logo.tsx`.
 4. **Update this README and `CLAUDE.md`** to describe your app.
