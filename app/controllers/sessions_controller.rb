@@ -9,14 +9,11 @@ class SessionsController < InertiaController
   end
 
   def create
-    if user = User.authenticate_by(email: params[:email], password: params[:password])
-      @session = user.sessions.create!
-      cookies.signed.permanent[:session_token] = { value: @session.id, httponly: true }
+    user = User.authenticate_by(email: params[:email], password: params[:password])
+    return redirect_to sign_in_path, alert: "That email or password is incorrect" unless user
 
-      redirect_to dashboard_path, notice: "Signed in successfully"
-    else
-      redirect_to sign_in_path, alert: "That email or password is incorrect"
-    end
+    start_session_for(user)
+    redirect_to dashboard_path, notice: "Signed in successfully"
   end
 
   def destroy
