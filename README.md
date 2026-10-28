@@ -58,7 +58,7 @@ Do this first, before you build on the template:
    - `package.json` (`name`)
    - `config/database.yml` (database names)
    - `config/application.rb` (module name)
-2. **Regenerate credentials.** Delete `config/credentials.yml.enc` and run `bin/rails credentials:edit` to create your own secrets and master key. Never commit `config/master.key`.
+2. **Create credentials.** The template doesn't ship a `config/credentials.yml.enc`, and `bin/setup` doesn't create one. Development and test work without it, but production needs it. Run `bin/rails credentials:edit` to generate your own encrypted credentials file and `config/master.key` (save and close the editor to write them). Commit `config/credentials.yml.enc`, but never commit `config/master.key`, which is gitignored. Keep the key in a password manager, because deploys read it (`RAILS_MASTER_KEY` in `.kamal/secrets` and in the Railway variables below).
 3. **Swap the branding.** The logo lives in `app/javascript/components/app-logo.tsx`.
 4. **Update this README and `CLAUDE.md`** to describe your app.
 
