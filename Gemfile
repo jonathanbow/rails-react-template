@@ -74,7 +74,7 @@ end
 
 group :test do
   # One-line matchers for model validations and associations [https://github.com/thoughtbot/shoulda-matchers]
-  gem "shoulda-matchers", "~> 7.0"
+  gem "shoulda-matchers", "~> 8.0"
   # Code coverage [https://github.com/simplecov-ruby/simplecov]
   gem "simplecov", require: false
 end
