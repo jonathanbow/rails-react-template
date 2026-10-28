@@ -3,12 +3,10 @@
 require "rails_helper"
 
 RSpec.describe "Identity::EmailVerifications", type: :request do
-  fixtures :users
-
   describe "GET /identity/email_verification" do
     context "with valid token" do
       it "verifies the email" do
-        user = users(:one)
+        user = create(:user)
         user.update!(verified: false)
         sid = user.generate_token_for(:email_verification)
 
@@ -20,7 +18,7 @@ RSpec.describe "Identity::EmailVerifications", type: :request do
 
     context "with expired token" do
       it "does not verify the email" do
-        user = users(:one)
+        user = create(:user)
         user.update!(verified: false)
         sid = user.generate_token_for(:email_verification)
 
@@ -43,7 +41,7 @@ RSpec.describe "Identity::EmailVerifications", type: :request do
 
   describe "POST /identity/email_verification" do
     it "resends the verification email" do
-      user = users(:one)
+      user = create(:user)
       user.update!(verified: false)
       sign_in user
 

@@ -3,13 +3,13 @@
 require "rails_helper"
 
 RSpec.describe UserMailer, type: :mailer do
-  fixtures :users
+  let(:user) { create(:user) }
 
   describe "email_verification" do
-    let(:mail) { described_class.with(user: users(:one)).email_verification }
+    let(:mail) { described_class.with(user: user).email_verification }
 
     it "sends to the user's email" do
-      expect(mail.to).to eq([ "one@example.com" ])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it "has the correct subject" do
@@ -18,10 +18,10 @@ RSpec.describe UserMailer, type: :mailer do
   end
 
   describe "password_reset" do
-    let(:mail) { described_class.with(user: users(:one)).password_reset }
+    let(:mail) { described_class.with(user: user).password_reset }
 
     it "sends to the user's email" do
-      expect(mail.to).to eq([ "one@example.com" ])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it "has the correct subject" do

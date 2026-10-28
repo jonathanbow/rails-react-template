@@ -38,3 +38,6 @@
 /ssr
 node_modules
 *.local
+
+# Test coverage reports
+/coverage/

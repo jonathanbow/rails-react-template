@@ -3,9 +3,9 @@
 require "rails_helper"
 
 RSpec.describe "Settings::Passwords", type: :request do
-  fixtures :users
+  let(:user) { create(:user) }
 
-  before { sign_in users(:one) }
+  before { sign_in user }
 
   describe "GET /settings/password" do
     it "renders the password settings page" do

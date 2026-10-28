@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe "Users", type: :request do
-  fixtures :users
+  let(:user) { create(:user) }
 
   describe "GET /sign_up" do
     it "renders the sign up page" do
@@ -12,7 +12,7 @@ RSpec.describe "Users", type: :request do
     end
 
     it "redirects authenticated users" do
-      sign_in users(:one)
+      sign_in user
       get sign_up_path
       expect(response).to redirect_to(root_path)
     end
@@ -46,7 +46,7 @@ RSpec.describe "Users", type: :request do
 
   describe "DELETE /users" do
     it "destroys current user with valid password" do
-      sign_in users(:one)
+      sign_in user
       expect {
         delete users_path, params: { password_challenge: "Secret1*3*5*" }
       }.to change(User, :count).by(-1)
@@ -54,7 +54,7 @@ RSpec.describe "Users", type: :request do
     end
 
     it "rejects account deletion with wrong password" do
-      sign_in users(:one)
+      sign_in user
       expect {
         delete users_path, params: { password_challenge: "wrongpassword" }
       }.not_to change(User, :count)

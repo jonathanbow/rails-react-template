@@ -3,9 +3,9 @@
 require "rails_helper"
 
 RSpec.describe "Settings::Emails", type: :request do
-  fixtures :users
+  let(:user) { create(:user) }
 
-  before { sign_in users(:one) }
+  before { sign_in user }
 
   describe "GET /settings/email" do
     it "renders the email settings page" do
@@ -23,7 +23,7 @@ RSpec.describe "Settings::Emails", type: :request do
         }
         expect(response).to redirect_to(settings_email_path)
         expect(flash[:notice]).to eq("Your email has been changed")
-        expect(users(:one).reload.email).to eq("updated@example.com")
+        expect(user.reload.email).to eq("updated@example.com")
       end
     end
 
@@ -35,7 +35,7 @@ RSpec.describe "Settings::Emails", type: :request do
         }
         expect(response).to redirect_to(settings_email_path)
         expect(session[:inertia_errors]).to eq(password_challenge: [ "is invalid" ])
-        expect(users(:one).reload.email).to eq("one@example.com")
+        expect(user.reload.email).not_to eq("updated@example.com")
       end
     end
   end

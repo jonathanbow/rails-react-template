@@ -3,9 +3,9 @@
 require "rails_helper"
 
 RSpec.describe "Settings::Sessions", type: :request do
-  fixtures :users
+  let(:user) { create(:user) }
 
-  before { sign_in users(:one) }
+  before { sign_in user }
 
   describe "GET /settings/sessions" do
     it "renders the sessions index" do

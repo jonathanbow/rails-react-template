@@ -61,6 +61,7 @@ group :development, :test do
 
   # RSpec for Rails 7+
   gem "rspec-rails", "~> 8.0"
+  gem "factory_bot_rails"
 end
 
 group :development do
@@ -72,9 +73,8 @@ group :development do
 end
 
 group :test do
-  # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
-  gem "capybara"
-  # Synchronize Capybara commands with application JavaScript and AJAX requests
-  gem "capybara-lockstep"
-  gem "selenium-webdriver"
+  # One-line matchers for model validations and associations [https://github.com/thoughtbot/shoulda-matchers]
+  gem "shoulda-matchers", "~> 7.0"
+  # Code coverage [https://github.com/simplecov-ruby/simplecov]
+  gem "simplecov", require: false
 end

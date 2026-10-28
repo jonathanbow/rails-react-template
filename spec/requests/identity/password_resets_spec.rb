@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe "Identity::PasswordResets", type: :request do
-  fixtures :users
+  let(:user) { create(:user) }
 
   describe "GET /identity/password_reset/new" do
     it "renders the forgot password page" do
@@ -16,18 +16,18 @@ RSpec.describe "Identity::PasswordResets", type: :request do
     context "with a verified user" do
       it "sends a password reset email" do
         expect {
-          post identity_password_reset_path, params: { email: users(:one).email }
-        }.to have_enqueued_email(UserMailer, :password_reset).with(params: { user: users(:one) }, args: [])
+          post identity_password_reset_path, params: { email: user.email }
+        }.to have_enqueued_email(UserMailer, :password_reset).with(params: { user: user }, args: [])
         expect(response).to redirect_to(sign_in_path)
       end
     end
 
     context "with an unverified user" do
       it "does not send a password reset email" do
-        users(:one).update!(verified: false)
+        user.update!(verified: false)
 
         expect {
-          post identity_password_reset_path, params: { email: users(:one).email }
+          post identity_password_reset_path, params: { email: user.email }
         }.not_to have_enqueued_mail(UserMailer, :password_reset)
         expect(response).to redirect_to(new_identity_password_reset_path)
         expect(flash[:alert]).to eq("You can't reset your password until you verify your email")
@@ -47,7 +47,7 @@ RSpec.describe "Identity::PasswordResets", type: :request do
 
   describe "GET /identity/password_reset/edit" do
     it "renders the reset page with valid token" do
-      sid = users(:one).generate_token_for(:password_reset)
+      sid = user.generate_token_for(:password_reset)
       get edit_identity_password_reset_path(sid: sid)
       expect(response).to have_http_status(:success)
     end
@@ -61,7 +61,7 @@ RSpec.describe "Identity::PasswordResets", type: :request do
   describe "PATCH /identity/password_reset" do
     context "with valid token" do
       it "updates the password" do
-        sid = users(:one).generate_token_for(:password_reset)
+        sid = user.generate_token_for(:password_reset)
         patch identity_password_reset_path(sid: sid), params: {
           password: "NewPassword1*3*",
           password_confirmation: "NewPassword1*3*"
@@ -72,7 +72,7 @@ RSpec.describe "Identity::PasswordResets", type: :request do
 
     context "with expired token" do
       it "rejects the password change" do
-        sid = users(:one).generate_token_for(:password_reset)
+        sid = user.generate_token_for(:password_reset)
         travel 30.minutes
 
         patch identity_password_reset_path(sid: sid), params: {
@@ -86,7 +86,7 @@ RSpec.describe "Identity::PasswordResets", type: :request do
 
     context "with mismatched password confirmation" do
       it "rejects the password change" do
-        sid = users(:one).generate_token_for(:password_reset)
+        sid = user.generate_token_for(:password_reset)
         patch identity_password_reset_path(sid: sid), params: {
           password: "NewPassword1*3*",
           password_confirmation: "different"

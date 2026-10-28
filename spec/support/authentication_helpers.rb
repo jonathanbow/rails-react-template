@@ -17,20 +17,8 @@ module AuthenticationHelpers
       cookies[:session_token] = ""
     end
   end
-
-  module System
-    def sign_in(user)
-      session = user.sessions.create!
-      page.driver.set_cookie("session_token", AuthenticationHelpers.signed_cookie(:session_token, session.id))
-    end
-
-    def sign_out
-      page.driver.set_cookie("session_token", "")
-    end
-  end
 end
 
 RSpec.configure do |config|
   config.include AuthenticationHelpers::Request, type: :request
-  config.include AuthenticationHelpers::System, type: :system
 end
