@@ -1,7 +1,6 @@
 import { Link } from "@inertiajs/react"
-import { BookOpen, Folder, LayoutGrid } from "lucide-react"
+import { LayoutGrid } from "lucide-react"
 
-import { NavFooter } from "@/components/nav-footer"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import {
@@ -26,19 +25,6 @@ const mainNavItems: NavItem[] = [
   },
 ]
 
-const footerNavItems: NavItem[] = [
-  {
-    title: "Repository",
-    href: "https://github.com/inertia-rails/react-starter-kit",
-    icon: Folder,
-  },
-  {
-    title: "Documentation",
-    href: "https://inertia-rails.dev",
-    icon: BookOpen,
-  },
-]
-
 export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" variant="inset">
@@ -59,7 +45,6 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <NavFooter items={footerNavItems} className="mt-auto" />
         <NavUser />
       </SidebarFooter>
     </Sidebar>
