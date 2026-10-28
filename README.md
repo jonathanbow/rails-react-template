@@ -1,4 +1,4 @@
-# Inertia Rails React Starter Kit
+# Rails React Template
 
 A modern full-stack starter application with Rails backend and React frontend using Inertia.js based on the [Laravel Starter Kit](https://github.com/laravel/react-starter-kit).
 
