@@ -17,7 +17,7 @@ Read the plan file `$ARGUMENTS` before writing a single line of code. `CLAUDE.md
 
 After reading, summarise in 2–3 sentences: what the feature does, which files will be created or modified, and any constraints from the plan you want to flag before starting.
 
-Check the plan's "Depends on" section. If it names unmerged work (a PR, branch, or other plan file), stop and tell the user this plan builds on unmerged work and may belong in `/implement-stacked-feature` instead. Do not stack, and do not branch from `main` anyway, until they decide.
+Check the plan's "Depends on" section. If it names unmerged work (a PR, branch, or other plan file), stop and tell the user this plan builds on unmerged work, and wait for their decision before branching. If they want a stack, follow `.rules/stacked_prs.md`.
 
 Note whether `$ARGUMENTS` is a path under `requirements/` (and not already under `requirements/done/`; a plan under `requirements/deferred/` is eligible, and Step 6 moves it to `done/`). This determines whether Step 6 applies later.
 
@@ -52,6 +52,8 @@ For each step in the plan, follow the TDD cycle below before moving to the next 
 
 Before starting a step, read the files in `.rules/` that apply to the code it touches (for example the test-setup rules before writing a spec, or the page-component rules before editing a `.tsx` page). Do not read all of them up front.
 
+If you find an unrelated bug while working, do not fix it on this branch; note it for the user (`.rules/bug_fixes_in_isolated_branches.md`).
+
 If a step involves finding many call sites or comparing against existing patterns across the codebase, delegate that search to `Explore` subagents and work from their conclusions. Keep the TDD cycle itself in this session.
 
 If a step turns out to be wrong or impossible (a file or method it names does not exist, it conflicts with an existing pattern, or the plan contradicts itself), stop and report what you found. Do not improvise a different design; the plan may have been written a while ago. Wait for the user's decision before continuing.
@@ -64,7 +66,7 @@ Follow the plan's own verification notes. A step the plan tags "manual verificat
 
 1. **Write the spec first** — do not write any implementation yet
 2. **Run the spec** — `bin/rspec <path>` — confirm it fails (red). If it passes without implementation, the spec is wrong; fix it first
-3. **Write the implementation** — follow the conventions in CLAUDE.md. If the step touches a controller's `as_json` allowlist, update the matching TS interface in `app/javascript/types/index.ts` in the same step
+3. **Write the implementation** — follow the conventions in CLAUDE.md. If the step changes the props a controller passes, update the matching TS types in `app/javascript/types` in the same step
 4. **Run the spec again** — confirm it passes (green). Fix failures before continuing; never skip or delete a failing test
 5. **Run lint** — `bin/rubocop -A <the Ruby files changed in this step>` (not the whole repo, so the commit stays atomic); for any JS/TS touched in this step also run `npm run check` and `npm run lint:fix` — fix any remaining offences
 6. **Commit** — one commit per plan step, only when green. Before committing, confirm with `git branch --show-current` that you are still on the feature branch
@@ -73,7 +75,7 @@ Follow the plan's own verification notes. A step the plan tags "manual verificat
 
 1. **Implement** the migration, route, or view
 2. If a migration: run `bin/rails db:migrate` and confirm the schema matches the plan
-3. If routes changed: run `bin/rails typelizer:routes` to regenerate `app/javascript/routes/**`
+3. If routes changed: run `bin/rails typelizer:generate:refresh` to regenerate `app/javascript/routes/**`
 4. If a view: do not launch the server or drive a browser yourself — the user runs the app via `bin/dev` and verifies the UI themselves in Step 5
 5. **Run lint** — `bin/rubocop -A <the Ruby files changed in this step>`; for view/TS changes also run `npm run check` and `npm run lint:fix`
 6. **Commit** — first confirm with `git branch --show-current` that you are still on the feature branch
@@ -131,7 +133,7 @@ Do not push or open a PR on your own. Ask: **"Push `<branch-name>` and open a PR
 - If confirmed: `git push -u origin <branch-name>`, then open the PR with `gh pr create` against `main`, with a description summarising the feature and linking the plan file.
 - If declined, finish without pushing.
 
-Never add the PR to an existing stack or base it on another branch unless the user explicitly asks.
+Base the PR on `main` unless the user explicitly asks otherwise.
 
 ---
 

@@ -6,3 +6,13 @@ inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 # # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
 # Layout/SpaceInsideArrayLiteralBrackets:
 #   Enabled: false
+
+# Methods should be short; multi-line arrays/hashes count as a single line.
+Metrics/MethodLength:
+  Enabled: true
+  Max: 5
+  CountAsOne:
+    - array
+    - hash
+  Exclude:
+    - "db/migrate/**/*"

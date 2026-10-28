@@ -55,7 +55,7 @@ Split the review into independent slices and launch one `general-purpose` subage
 
 Do not use `Explore` for review slices: it locates code, it doesn't audit it.
 
-Each subagent prompt must be self-contained: give it the scope, the section(s) of this checklist it owns, the instruction to read whole files and follow call sites, and the instruction that it is **read-only** (no edits, no writes, no autocorrect). Ask it to return, for each candidate finding: category, file and line, severity, the issue, the concrete failure scenario (inputs or state, and what goes wrong), and a suggested fix, plus a confidence of high or low. Tell it to return nothing for an area with no problems rather than padding.
+Each subagent prompt must be self-contained: give it the scope, the section(s) of this checklist it owns, the `.rules/` files that apply to its slice (it must read them), the instruction to read whole files and follow call sites, and the instruction that it is **read-only** (no edits, no writes, no autocorrect). Ask it to return, for each candidate finding: category, file and line, severity, the issue, the concrete failure scenario (inputs or state, and what goes wrong), and a suggested fix, plus a confidence of high or low. Tell it to return nothing for an area with no problems rather than padding.
 
 Meanwhile, do not duplicate their searches. Use the time to read the pieces of the app that cut across slices (the shared base controllers, `Current`, the Inertia share, `types/index.ts`).
 
@@ -82,41 +82,41 @@ Write only findings that exist in the code. Do not invent hypothetical issues, a
 
 ## Review checklist
 
-Apply `CLAUDE.md` and the files in `.rules/` that match the code under review. Authentication Zero and shadcn idioms in the auth/settings/layout code are intentional (see "What this is" in `CLAUDE.md`); judge new domain code against the stated conventions, not against how the scaffold looks.
+Apply `CLAUDE.md` and the files in `.rules/` that match the code under review. Authentication Zero and shadcn idioms in the auth/settings/layout code are intentional; judge new domain code against the stated conventions, not against how the scaffold looks.
 
 ### 1. Rails & Inertia
 
 - Controllers doing more than parameter handling, authorization, and orchestration; logic that belongs in a model, scope, or (only when it spans models or is genuinely complex) a service. Do not ask for a service object for trivial logic.
 - `before_action` used for anything other than authentication or authorization; side effects hidden in filters.
-- `as_json(only: [...])` allowlists that are missing (raw models or unfiltered `as_json` going to the page), broader than the page needs, or out of sync with the matching interface in `app/javascript/types/index.ts` in either direction.
+- Props that pass raw models or unfiltered attributes to the page, are broader than the page needs (especially sensitive columns such as `password_digest`), or are out of sync with the matching TypeScript types in `app/javascript/types` in either direction.
 - `inertia_share` carrying page-specific data (only `auth` belongs there).
 - Mutating actions that render a page instead of `redirect_to ... notice:/alert:` or `inertia: { errors: }`.
 - A rendered page whose component is not at `app/javascript/pages/<controller>/<action>.tsx`, or a prop the component takes that the action never passes.
-- Hand-edits to `app/javascript/routes/**` or `components/ui/*`; hardcoded URL strings instead of `@/routes` imports; routes changed without regenerated route files.
+- Hand-edits to the generated files in `app/javascript/routes/**`; hardcoded URL strings instead of `@/routes` imports; routes changed without regenerated route files.
 - Mutations from the frontend via raw `fetch`/`axios` instead of Inertia's `<Form>` or `router.*`.
 
 ### 2. Active Record & database
 
-- N+1 queries in props-building code (loops over associations without `includes`/`preload`/`eager_load`), `find` inside loops. Weigh against the expected data volumes in your memory (about 40 active flights, 500+ archived: active lists are never paginated, archived ones are).
+- N+1 queries in props-building code (loops over associations without `includes`/`preload`/`eager_load`), `find` inside loops. Weigh against the data volumes you expect for the page.
 - Queries built in controllers that should be model scopes; repeated query shapes that should be a named scope.
-- Callbacks other than the sanctioned exceptions (`before_validation` normalisation, invariants that cannot be a DB constraint); side effects (mail, jobs, API calls) triggered from callbacks instead of called explicitly.
+- Callbacks other than `before_validation` normalisation and invariants that cannot be a DB constraint; side effects (mail, jobs, API calls) triggered from callbacks instead of called explicitly.
 - `update_attribute`/`update_column` skipping validations without a reason; `has_many`/`has_one` without a considered `dependent:`.
-- Validations without a backing DB constraint where one is practical (`null: false`, unique index, foreign key); foreign keys and frequently queried columns without an index; schema and data changes mixed in one migration; unsafe migrations on tables that will be large (there is no `strong_migrations`, so judge by hand: locking operations, backfills in the same migration).
+- Validations without a backing DB constraint where one is practical (`null: false`, unique index, foreign key); foreign keys and frequently queried columns without an index; schema and data changes mixed in one migration; unsafe migrations on tables that will be large (judge by hand: locking operations, backfills in the same migration).
 - `db/schema.rb` out of step with the migrations.
 
 ### 3. Security & PII
 
 - Mass assignment: `permit` accepting ownership fields (`user_id`), roles, or other sensitive attributes; ownership not set server-side or queries not scoped through the right association (an authenticated user reading or changing another record by id).
-- Actions reachable without authentication, or admin-only actions missing `require_admin`. Only `SessionsController#new/create` and `TwoFactorAuthenticationChallengesController#show/create` should skip `authenticate`; `AccountingDocumentCallbacksController` subclasses `ActionController::Base` and carries no session or CSRF machinery, so check that it authenticates the caller another way (signature or token verification, constant-time comparison, replay handling).
-- Passport and other PII (encrypted attributes, authenticated downloads), 2FA codes, tokens, and passwords appearing in logs, error reports (Rollbar), flash messages, `as_json` output, or exception messages. Check `filter_parameters` and any Rollbar scrubbing against newly added sensitive params.
-- Raw SQL or string interpolation into `where`/`order`/`execute`; `send`/`constantize`/`to_proc` on user input; `redirect_to` on user-supplied URLs (use the existing safe-return helper); file handling and uploads (content-type trust, path handling, size limits).
+- Actions reachable without authentication, or admin-only actions missing `require_admin`. Only the public controllers (sign-up, sign-in, home, email verification, password reset) should skip `authenticate`, and those that redirect signed-in users away should use `require_no_authentication`. Any other endpoint that skips it, or that bypasses session and CSRF handling (a webhook, for example), must authenticate the caller another way (signature or token verification, constant-time comparison, replay handling).
+- PII, tokens, and passwords appearing in logs, error reports, flash messages, props, or exception messages. Check `filter_parameters` against newly added sensitive params.
+- Raw SQL or string interpolation into `where`/`order`/`execute`; `send`/`constantize`/`to_proc` on user input; `redirect_to` on user-supplied URLs; file handling and uploads (content-type trust, path handling, size limits).
 - `dangerouslySetInnerHTML` on user-supplied or externally sourced content without sanitisation.
-- CSRF protection disabled outside the callback controller; SSRF or unbounded outbound requests to user-supplied URLs.
+- CSRF protection disabled; SSRF or unbounded outbound requests to user-supplied URLs.
 - Brakeman, `bundler-audit`, and `npm audit` results from Step 2 that fall within scope.
 
 ### 4. Background jobs, services & integrations
 
-- Slow or fallible work (email, Xero and other external APIs, PDF/CSV processing) done inside the request cycle instead of an Active Job on Solid Queue.
+- Slow or fallible work (email, external APIs, PDF/CSV processing) done inside the request cycle instead of an Active Job on Solid Queue.
 - Jobs that are not idempotent, take records rather than ids, hold business logic in `perform`, or lack `retry_on`/`discard_on` for transient failures; jobs enqueued inside a transaction before it commits.
 - Third-party calls not behind an app-owned wrapper (see `.rules/abstract_third_party_interfaces.md`), without timeouts, or with retry middleware that could double-post a non-idempotent call.
 - Services that have a hidden side effect, more than one public entry point, or exist to wrap a single line.
@@ -129,22 +129,22 @@ Apply `CLAUDE.md` and the files in `.rules/` that match the code under review. A
 
 ### 6. Frontend (React/TypeScript)
 
-- Derived state, formatting, or business logic inline in a page component instead of `lib/` or `hooks/` (`.rules/no_inline_computation_in_page_components.md`); mutations triggered from presentation helpers.
+- Derived state, formatting, or business logic inline in a page component instead of `lib/` or `hooks/` (`.rules/no_inline_computation_in_page_components.md`); mutations triggered from presentation helpers (`.rules/no_mutations_in_presentation_helpers.md`).
 - `useEffect` fetching or syncing data that is already an Inertia prop; state that mirrors a prop.
 - Hand-rolled UI that duplicates a `components/ui/*` primitive; ad-hoc styles where the file's Tailwind conventions apply.
 - `any`, `as unknown as`, or `@ts-ignore` covering a real type mismatch; types duplicated instead of imported from `@/types`.
 - Form labels not tied to their inputs (`.rules/form_labels_match_inputs.md`); inputs with no error display for server-returned errors.
 - Debug output (`console.log`, `debugger`) left in committed code; unused props, imports, and variables.
-- Do **not** report a lack of automated frontend tests. Frontend testing is manual by design.
+- Do **not** report a lack of automated frontend tests. The repo has no frontend test setup.
 
 ### 7. Tests & house rules
 
 - Changed or new backend behaviour (models, requests, jobs, services) without a spec that pins it; bug fixes without a regression test; specs that assert implementation rather than behaviour or over-mock.
-- Specs that break `.rules/` (setup in `before`, self-contained contexts, `with`/`without` wording) or use FactoryBot instead of `spec/fixtures/`. Fixtures with hard-coded dates that will expire.
-- String-ordering specs that depend on the local collation.
-- Anything that adds Capybara, Selenium, or `spec/system/**`.
-- Comments in `app/models`, `app/controllers`, `app/services`, and `app/jobs` that restate what a spec or the code already says (see "Keep application code close to comment-free" in `CLAUDE.md`). Functional directives and comments that forbid a plausible future change are exempt.
-- `Metrics/MethodLength` and the other rules in `.rubocop.yml`, `.rules/no_shorthand_variables.md`, `.rules/avoid_law_of_demeter_violations.md`; `is_*` predicate names; more than one class per file.
+- Specs that break `.rules/test_setup_in_before_block.md`, `.rules/test_context_setup_not_cascaded.md`, or `.rules/with_without_for_existence_contexts.md`.
+- Factories or specs with hard-coded dates that will expire; factories that no longer pass `spec/factories_spec.rb`.
+- Anything that adds system tests (Capybara, Selenium, `spec/system/**`); `CLAUDE.md` says there are none.
+- Offences against `.rubocop.yml` (rubocop-rails-omakase), `.rules/method_length.md`, `.rules/no_shorthand_variables.md`, `.rules/avoid_law_of_demeter_violations.md`, and more than one class per file.
+- For a branch or PR review: a bug fix bundled into a feature branch (`.rules/bug_fixes_in_isolated_branches.md`) and commit messages that break `.rules/commit_messages.md`.
 
 ---
 
@@ -195,7 +195,7 @@ Tooling baseline: <one or two lines: brakeman, bundler-audit, rubocop, eslint, p
 ## Recommended Priority Order
 
 1. High severity findings, with a one-line reason each.
-2. Medium findings grouped into themes that could each be one `/plan-dev` plan (for example "N+1s on the flight pages").
+2. Medium findings grouped into themes that could each be one `/plan-dev` plan (for example "N+1s on the dashboard pages").
 3. Low findings last, batched into a single clean-up.
 ````
 

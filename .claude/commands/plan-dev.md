@@ -28,7 +28,7 @@ One paragraph describing what the feature does and why it's needed. Reference an
 
 ## Depends on
 
-Any unmerged work this plan builds on (a PR, branch, or other plan file), or "None." This tells the implementer whether the plan can start from the main branch. Flag a dependency, but do not decide how the work is branched or stacked.
+Any unmerged work this plan builds on (a PR, branch, or other plan file), or "None." This tells the implementer whether the plan can start from the main branch. Flag a dependency, but do not decide how the work is branched.
 
 ## Scope
 
@@ -43,9 +43,9 @@ List every file expected to be created or modified, with a one-line note on what
 | `app/models/...` | new model or association |
 | `app/controllers/...` | new controller or action |
 | `app/javascript/pages/<controller>/<action>.tsx` | new or modified Inertia page component |
-| `app/javascript/types/index.ts` | update TS interface to match controller's `as_json` shape |
+| `app/javascript/types/...` | update TS types to match the props the controller passes |
 | `db/migrate/...` | new migration |
-| `config/routes.rb` | new routes (note if `bin/rails typelizer:routes` needs to be re-run) |
+| `config/routes.rb` | new routes (note if `bin/rails typelizer:generate:refresh` needs to be re-run) |
 | ... | ... |
 
 ## Data model changes
@@ -66,7 +66,7 @@ Ordered steps a developer should follow. Each step is implemented as one test-th
 - Re-running any code generators the app uses (e.g. generated route helpers) after the change that requires it.
 - Following any rules in `CLAUDE.md` about comments, abstractions, or generated directories that should not be hand-edited.
 
-Every step must say how it is verified, following the testing approach in `CLAUDE.md`. For a step with automated coverage, name the spec file to create or extend, the fixtures or setup it needs, and the behavior it pins; the failing test comes before the production code in that step. For a step the project verifies manually (for example UI work when `CLAUDE.md` says frontend testing is manual), tag it "manual verification" and say what to check in the browser. Bug fixes include a regression test.
+Every step must say how it is verified, following the testing approach in `CLAUDE.md`. For a step with automated coverage, name the spec file to create or extend, the fixtures or setup it needs, and the behavior it pins; the failing test comes before the production code in that step. For a step the project verifies manually (for example UI work, since the repo has no frontend tests), tag it "manual verification" and say what to check in the browser. Bug fixes include a regression test.
 
 1. ...
 2. ...
@@ -116,7 +116,7 @@ If you can determine the plan from the codebase and the request, plus low-cost d
 
 - Do not implement anything. Write the plan file and stop.
 - Base all decisions on what actually exists in the codebase — do not invent classes or patterns that aren't there.
-- Follow CLAUDE.md conventions in all recommendations (service objects vs concerns, auth patterns, ActiveRecord ownership scoping, etc).
+- Follow CLAUDE.md conventions, and the files in `.rules/` that apply to the code being planned, in all recommendations (service objects vs concerns, auth patterns, ActiveRecord ownership scoping, etc).
 - Keep steps concrete and specific — reference real file paths, class names, and method signatures where known.
 - Verify before you cite. Every file, class, method, route, or column the plan names must be one you have read in this session, with a path (and line number where useful), or be explicitly marked as new. If you haven't confirmed something exists, check it or leave it out.
 - For a blocking ambiguity, ask with `AskUserQuestion` before writing the plan. If you cannot ask, write only the Open Questions section and stop — do not fabricate the rest of the plan. Do not stop for minor gaps; assume a sensible default and list it under Assumptions.
