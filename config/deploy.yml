@@ -52,7 +52,7 @@ env:
     # WEB_CONCURRENCY: 2
 
     # Match this to any external database server to configure Active Record correctly
-    # Use react_starter_kit-db for a db accessory server on same machine via local kamal docker network.
+    # Use rails_react_template-db for a db accessory server on same machine via local kamal docker network.
     # DB_HOST: 192.168.0.2
 
     # Log everything from Rails
@@ -66,7 +66,7 @@ aliases:
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
 
-# Use a persistent storage volume for sqlite database files and local Active Storage files.
+# Use a persistent storage volume for local Active Storage files.
 # Recommended to change this to a mounted volume path that is backed up off server.
 volumes:
   - "react_starter_kit_storage:/rails/storage"
